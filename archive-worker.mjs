@@ -29,7 +29,7 @@ for(let index=0;index<3;index++){
   try{
     if(!/^[a-f0-9-]{36}$/.test(job.id)||!/^[a-f0-9]{64}$/.test(job.expected?.sha256)||job.expected.bytes>12582912)throw new Error('Invalid archive contract')
     const url=new URL(job.audioUrl)
-    if(url.protocol!=='https:'||url.username||url.password||url.port||!['bytedance.com','byteimg.com','volces.com','volccdn.com','volcengine.com','bytecdn.cn'].some(domain=>url.hostname===domain||url.hostname.endsWith('.'+domain)))throw new Error('Invalid media host')
+    if(url.protocol!=='https:'||url.username||url.password||url.port||!['bytedance.com','byteimg.com','volces.com','volccdn.com','volcengine.com','bytecdn.cn','bytespeech.com'].some(domain=>url.hostname===domain||url.hostname.endsWith('.'+domain)))throw new Error('Invalid media host')
     const response=await fetch(url,{redirect:'error',signal:AbortSignal.timeout(30000)})
     if(!response.ok)throw new Error(`Media download ${response.status}`)
     const reader=response.body.getReader(),parts=[];let size=0
