@@ -1,0 +1,25 @@
+name: Archive complete PodFlow Web audio
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/5 * * * *'
+permissions:
+  contents: write
+concurrency:
+  group: podflow-web-archive
+  cancel-in-progress: false
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Save checked audio and acknowledge the exact digest
+        run: node archive-worker.mjs
+        env:
+          PODFLOW_SITE_URL: https://www.liuminxin.cn
+          PODFLOW_ARCHIVE_TOKEN: ${{ secrets.PODFLOW_ARCHIVE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
