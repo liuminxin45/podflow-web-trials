@@ -30,7 +30,8 @@ for(let index=0;index<3;index++){
     if(!/^[a-f0-9-]{36}$/.test(job.id)||!/^[a-f0-9]{64}$/.test(job.expected?.sha256)||job.expected.bytes>12582912)throw new Error('Invalid archive contract')
     const url=new URL(job.audioUrl)
     if(url.protocol!=='https:'||url.username||url.password||url.port||!['bytedance.com','byteimg.com','volces.com','volccdn.com','volcengine.com','bytecdn.cn','bytespeech.com'].some(domain=>url.hostname===domain||url.hostname.endsWith('.'+domain)))throw new Error('Invalid media host')
-    const response=await fetch(url,{redirect:'error',signal:AbortSignal.timeout(30000)})
+    // Download through the lease-bound server relay: overseas runners may not reach the provider's China media hosts.
+    const response=await fetch(`${origin}/api/podflow/archive/media`,{method:'POST',redirect:'error',signal:AbortSignal.timeout(60000),headers:{Authorization:`Bearer ${archiveSecret}`,'Content-Type':'application/json'},body:JSON.stringify({id:job.id,lease:job.lease})})
     if(!response.ok)throw new Error(`Media download ${response.status}`)
     const reader=response.body.getReader(),parts=[];let size=0
     try{while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>12582912)throw new Error('Media too large');parts.push(Buffer.from(value))}}finally{await reader.cancel().catch(()=>{})}
