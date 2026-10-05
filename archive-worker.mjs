@@ -43,7 +43,10 @@ for(let index=0;index<3;index++){
     const audio=await upload(release,'podcast.mp3',bytes,'audio/mpeg')
     await upload(release,'episode.json',Buffer.from(JSON.stringify(job.metadata,null,2)),'application/json')
     if(release.draft)release=await github(`/releases/${release.id}`,{draft:false},'PATCH')
-    await site('complete',{id:job.id,lease:job.lease,url:audio.browser_download_url,sha256})
+    // Draft asset URLs use a temporary untagged path; use the published release's final asset URL.
+    const published=release.assets?.find(x=>x.id===audio.id&&x.name==='podcast.mp3')
+    if(!published||published.digest!=='sha256:'+sha256)throw new Error('Published audio digest does not match')
+    await site('complete',{id:job.id,lease:job.lease,url:published.browser_download_url,sha256})
     completed=true;console.log(JSON.stringify({archived:job.id,bytes:bytes.length}))
   }finally{if(!completed)await site('retry',{id:job.id,lease:job.lease}).catch(()=>{})}
 }
